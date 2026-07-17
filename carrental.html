@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DriveEase — Car Rental Made Simple</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  body { background: #f4f6f9; color: #1a1a2e; line-height: 1.6; }
+
+  /* Navbar */
+  nav {
+    background: #0f3460; color: #fff; padding: 1rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  nav .logo { font-size: 1.5rem; font-weight: bold; color: #e94560; }
+  nav ul { display: flex; list-style: none; gap: 2rem; }
+  nav ul a { color: #fff; text-decoration: none; transition: color 0.3s; }
+  nav ul a:hover { color: #e94560; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(rgba(15,52,96,0.85), rgba(15,52,96,0.85)),
+                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600') center/cover;
+    color: #fff; padding: 6rem 2rem; text-align: center;
+  }
+  .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+  .hero p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; }
+  .btn {
+    background: #e94560; color: #fff; padding: 0.9rem 2rem; border: none;
+    border-radius: 6px; font-size: 1rem; cursor: pointer; text-decoration: none;
+    display: inline-block; transition: transform 0.2s, background 0.3s;
+  }
+  .btn:hover { background: #c73650; transform: translateY(-2px); }
+
+  /* Search bar */
+  .search-box {
+    background: #fff; border-radius: 10px; padding: 1.5rem;
+    max-width: 900px; margin: -3rem auto 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+    position: relative; z-index: 10;
+  }
+  .search-box label { font-size: 0.85rem; color: #555; display: block; margin-bottom: 0.3rem; }
+  .search-box input, .search-box select {
+    width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;
+  }
+  .search-box button { align-self: end; }
+
+  /* Sections */
+  section { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .section-title { text-align: center; font-size: 2rem; margin-bottom: 2.5rem; color: #0f3460; }
+
+  /* Cars grid */
+  .cars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+  .car-card {
+    background: #fff; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .car-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+  .car-card img { width: 100%; height: 180px; object-fit: cover; }
+  .car-info { padding: 1.2rem; }
+  .car-info h3 { color: #0f3460; margin-bottom: 0.4rem; }
+  .car-info .type { color: #888; font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .car-info .features { display: flex; gap: 0.8rem; font-size: 0.85rem; color: #555; margin-bottom: 1rem; flex-wrap: wrap; }
+  .car-info .price { font-size: 1.4rem; color: #e94560; font-weight: bold; margin-bottom: 1rem; }
+  .car-info .price span { font-size: 0.85rem; color: #888; font-weight: normal; }
+
+  /* Features */
+  .features-section { background: #fff; }
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; }
+  .feature { text-align: center; padding: 1.5rem; }
+  .feature .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .feature h4 { color: #0f3460; margin-bottom: 0.5rem; }
+  .feature p { color: #666; font-size: 0.95rem; }
+
+  /* Modal */
+  .modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; justify-content: center; align-items: center; padding: 1rem;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: #fff; padding: 2rem; border-radius: 10px; max-width: 500px; width: 100%;
+  }
+  .modal-content h2 { color: #0f3460; margin-bottom: 1rem; }
+  .modal-content input {
+    width: 100%; padding: 0.7rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 5px;
+  }
+  .close { float: right; cursor: pointer; font-size: 1.5rem; color: #888; }
+
+  /* Admin panel */
+  .admin-section { background: #fff; }
+  .admin-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+  .admin-bar p { color: #666; font-size: 0.9rem; }
+  .admin-table-wrap { overflow-x: auto; border: 1px solid #eee; border-radius: 10px; }
+  table.admin-table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  table.admin-table th, table.admin-table td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+  table.admin-table th { background: #f4f6f9; color: #0f3460; }
+  table.admin-table img { width: 60px; height: 40px; object-fit: cover; border-radius: 4px; background: #eef1f6; }
+  table.admin-table tr:hover { background: #fafbfd; }
+  .admin-actions button { border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-right: 0.4rem; }
+  .btn-edit { background: #ffd166; color: #1a1a2e; }
+  .btn-delete { background: #e94560; color: #fff; }
+  .btn-edit:hover { background: #e6b94f; }
+  .btn-delete:hover { background: #c73650; }
+  .btn-toggle { background: #457b9d; color: #fff; }
+  .btn-toggle:hover { background: #386586; }
+  .status-badge { padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+  .status-available { background: #d8f3dc; color: #1b7a3d; }
+  .status-unavailable { background: #fde2e4; color: #b3222b; }
+  .admin-empty { padding: 2rem; text-align: center; color: #888; }
+
+  /* Admin auth gate */
+  .admin-gate {
+    max-width: 420px; margin: 0 auto; background: #fff; border: 1px solid #eee;
+    border-radius: 10px; padding: 2rem;
+  }
+  .admin-gate h3 { color: #0f3460; margin-bottom: 0.5rem; }
+  .admin-gate p.hint { color: #777; font-size: 0.88rem; margin-bottom: 1rem; }
+  .admin-gate input {
+    width: 100%; padding: 0.7rem; margin-bottom: 0.8rem; border: 1px solid #ddd; border-radius: 5px;
+  }
+  .admin-gate .error-msg { color: #b3222b; font-size: 0.85rem; margin: -0.3rem 0 0.8rem; min-height: 1.1em; }
+  .admin-gate .security-note {
+    font-size: 0.78rem; color: #999; margin-top: 1.4rem; border-top: 1px dashed #eee; padding-top: 0.8rem;
+  }
+  .admin-logged-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; font-size: 0.9rem; color: #444; flex-wrap: wrap; gap: 0.6rem;
+  }
+
+  /* Account modal (user login/signup) */
+  .account-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+  .tab-btn {
+    flex: 1; padding: 0.6rem; border: 1px solid #ddd; background: #f4f6f9; color: #555;
+    border-radius: 6px; cursor: pointer; font-size: 0.95rem;
+  }
+  .tab-btn.active { background: #0f3460; color: #fff; border-color: #0f3460; }
+  #accountLoginForm .error-msg, #accountSignupForm .error-msg {
+    color: #b3222b; font-size: 0.85rem; margin: -0.5rem 0 0.8rem; min-height: 1.1em;
+  }
+  nav ul a.account-link { cursor: pointer; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-grid label { font-size: 0.85rem; color: #555; display: block; margin-bottom: 0.3rem; margin-top: 0.6rem; }
+  .form-grid input, .form-grid select { width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 5px; }
+  .image-preview { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; background: #eef1f6; margin-top: 0.5rem; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.2rem; }
+  .btn-secondary { background: #ccc; color: #1a1a2e; }
+  .btn-secondary:hover { background: #bbb; }
+
+  /* Footer */
+  footer {
+    background: #0f3460; color: #fff; text-align: center; padding: 2rem;
+  }
+  footer p { opacity: 0.8; }
+
+  @media (max-width: 600px) {
+    nav ul { display: none; }
+    .hero h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">🚗 DriveEase</div>
+  <ul>
+    <li><a href="#cars">Cars</a></li>
+    <li><a href="#admin">Admin</a></li>
+    <li><a href="#features">Why Us</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li id="accountNavItem"><!-- Populated by renderAccountNav() --></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <h1>Rent Your Perfect Ride</h1>
+  <p>Premium cars at affordable rates. Book in seconds, drive with confidence.</p>
+  <a href="#cars" class="btn">Browse Cars</a>
+</header>
+
+<div class="search-box">
+  <div><label>Pick-up Location</label>
+    <select>
+      <option>Mumbai</option>
+      <option>Delhi</option>
+      <option>Bengaluru</option>
+      <option>Hyderabad</option>
+      <option>Chennai</option>
+      <option>Kolkata</option>
+      <option>Pune</option>
+      <option>Ahmedabad</option>
+      <option>Jaipur</option>
+      <option>Goa</option>
+    </select>
+  </div>
+  <div><label>Pick-up Date</label><input type="date" /></div>
+  <div><label>Return Date</label><input type="date" /></div>
+  <div><label>Car Type</label>
+    <select><option>All</option><option>Sedan</option><option>SUV</option><option>Luxury</option></select>
+  </div>
+  <button class="btn">Search</button>
+</div>
+
+<section id="cars">
+  <h2 class="section-title">Available Cars</h2>
+  <div class="cars-grid" id="carsGrid"></div>
+</section>
+
+<section id="admin" class="admin-section">
+  <h2 class="section-title">Admin Panel</h2>
+
+  <div id="adminLoginGate" class="admin-gate">
+    <!-- Populated dynamically by renderAdminGate() -->
+  </div>
+
+  <div id="adminPanelContent" style="display:none;">
+    <div class="admin-logged-bar">
+      <span>🔒 Logged in as admin</span>
+      <div>
+        <button class="btn btn-secondary" onclick="openChangePasswordForm()">Change Password</button>
+        <button class="btn btn-secondary" onclick="adminLogout()">Log Out</button>
+      </div>
+    </div>
+    <div class="admin-bar">
+      <p>Add, edit, or remove cars from the fleet — changes are saved and update the listing above instantly.</p>
+      <button class="btn" onclick="openCarForm()">+ Add New Car</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Image</th><th>Brand</th><th>Model</th><th>Type</th>
+            <th>Price/day</th><th>Seats</th><th>Transmission</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="features-section">
+  <h2 class="section-title">Why Choose DriveEase</h2>
+  <div class="features-grid">
+    <div class="feature"><div class="icon">💰</div><h4>Best Prices</h4><p>Guaranteed lowest rates with no hidden fees.</p></div>
+    <div class="feature"><div class="icon">🛡️</div><h4>Full Insurance</h4><p>Every rental includes comprehensive coverage.</p></div>
+    <div class="feature"><div class="icon">🕐</div><h4>24/7 Support</h4><p>Our team is here anytime, anywhere.</p></div>
+    <div class="feature"><div class="icon">🚙</div><h4>Wide Selection</h4><p>From economy to luxury, we've got it all.</p></div>
+  </div>
+</section>
+
+<div class="modal" id="carFormModal">
+  <div class="modal-content" style="max-width:600px;">
+    <span class="close" onclick="closeCarForm()">&times;</span>
+    <h2 id="carFormTitle">Add New Car</h2>
+    <input type="hidden" id="carFormId" />
+    <div class="form-grid">
+      <div>
+        <label>Brand</label>
+        <input type="text" id="carBrand" placeholder="e.g. Toyota" required />
+      </div>
+      <div>
+        <label>Model</label>
+        <input type="text" id="carModel" placeholder="e.g. Fortuner" required />
+      </div>
+      <div>
+        <label>Type</label>
+        <select id="carType" onchange="onCarTypeChange()">
+          <option value="Hatchback">Hatchback</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="MPV">MPV</option>
+          <option value="Luxury">Luxury</option>
+        </select>
+      </div>
+      <div>
+        <label>Transmission</label>
+        <select id="carTransmission">
+          <option value="Manual">Manual</option>
+          <option value="Auto">Auto</option>
+        </select>
+      </div>
+      <div>
+        <label>Price per day (₹)</label>
+        <input type="number" id="carPrice" min="0" placeholder="e.g. 3200" required />
+      </div>
+      <div>
+        <label>Seats</label>
+        <input type="number" id="carSeats" min="1" max="9" placeholder="e.g. 5" required />
+      </div>
+      <div class="full" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.8rem;">
+        <input type="checkbox" id="carAvailable" style="width:auto;" checked />
+        <label style="margin:0;" for="carAvailable">Available for rent (unchecked cars are hidden from customers)</label>
+      </div>
+      <div class="full">
+        <label>Image style</label>
+        <select id="carImageStyle" onchange="updateImagePreview()">
+          <option value="hatchback">Hatchback</option>
+          <option value="suvCompact">Compact SUV</option>
+          <option value="suvMid">Midsize SUV</option>
+          <option value="suvBig">Big / premium SUV</option>
+          <option value="suvOffRoad">Off-road SUV</option>
+          <option value="mpv">MPV / Van</option>
+          <option value="sedan">Sedan</option>
+          <option value="luxurySedan">Luxury Sedan</option>
+          <option value="upload">Upload from device…</option>
+          <option value="custom">Custom image URL…</option>
+        </select>
+      </div>
+      <div class="full" id="uploadImageWrap" style="display:none;">
+        <label>Upload image</label>
+        <input type="file" id="carImageFile" accept="image/*" onchange="handleImageUpload(event)" />
+        <input type="hidden" id="carUploadedData" />
+        <p style="font-size:0.8rem;color:#888;margin-top:0.3rem;">JPG or PNG under ~2MB works best.</p>
+      </div>
+      <div class="full" id="customImageWrap" style="display:none;">
+        <label>Custom image URL</label>
+        <input type="text" id="carCustomImage" placeholder="https://..." oninput="updateImagePreview()" />
+      </div>
+      <div class="full">
+        <label>Preview</label>
+        <img id="carImagePreview" class="image-preview" src="" alt="preview" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeCarForm()">Cancel</button>
+      <button class="btn" onclick="saveCarForm()">Save Car</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="changePasswordModal">
+  <div class="modal-content" style="max-width:420px;">
+    <span class="close" onclick="closeChangePasswordForm()">&times;</span>
+    <h2>Change Admin Password</h2>
+    <input type="password" id="cpCurrent" placeholder="Current password" />
+    <input type="password" id="cpNew" placeholder="New password (min 8 characters)" />
+    <input type="password" id="cpConfirm" placeholder="Confirm new password" />
+    <div class="error-msg" id="cpError" style="color:#b3222b;font-size:0.85rem;margin:-0.5rem 0 0.8rem;min-height:1.1em;"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeChangePasswordForm()">Cancel</button>
+      <button class="btn" onclick="submitChangePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="accountModal">
+  <div class="modal-content" style="max-width:420px;">
+    <span class="close" onclick="closeAccountModal()">&times;</span>
+    <div class="account-tabs">
+      <button type="button" class="tab-btn active" id="tabLoginBtn" onclick="switchAccountTab('login')">Log In</button>
+      <button type="button" class="tab-btn" id="tabSignupBtn" onclick="switchAccountTab('signup')">Sign Up</button>
+    </div>
+    <div id="accountLoginForm">
+      <h2>Log In</h2>
+      <input type="text" id="userLoginUsername" placeholder="Username" autocomplete="username" />
+      <input type="password" id="userLoginPassword" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitUserLogin()" />
+      <div class="error-msg" id="userLoginError"></div>
+      <button class="btn" onclick="submitUserLogin()" style="width:100%;">Log In</button>
+    </div>
+    <div id="accountSignupForm" style="display:none;">
+      <h2>Sign Up</h2>
+      <input type="text" id="userSignupUsername" placeholder="Choose a username (min 3 characters)" autocomplete="username" />
+      <input type="password" id="userSignupPassword" placeholder="Choose a password (min 8 characters)" autocomplete="new-password" />
+      <input type="password" id="userSignupConfirm" placeholder="Confirm password" autocomplete="new-password" />
+      <div class="error-msg" id="userSignupError"></div>
+      <button class="btn" onclick="submitUserSignup()" style="width:100%;">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="bookingModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Book <span id="modalCarName"></span></h2>
+    <input type="text" placeholder="Full Name" required />
+    <input type="email" placeholder="Email" required />
+    <input type="tel" placeholder="Phone" required />
+    <input type="date" required />
+    <button class="btn" onclick="confirmBooking()">Confirm Booking</button>
+  </div>
+</div>
+
+<footer id="contact">
+  <p>&copy; 2026 DriveEase Car Rentals India. Contact: hello@driveease.in | +91 98765 43210</p>
+</footer>
+
+<script>
+  // Mock data — in production this would come from the Java backend API
+  // Image strategy: external stock photos depend on outside servers, and
+  // those can be blocked by networks, firewalls, or ad-blockers (which is
+  // most likely why they weren't showing up). To guarantee the pictures
+  // always render, every car now gets a hand-drawn inline SVG illustration
+  // — baked directly into this file, zero network calls, zero dependencies.
+  // Each body class (hatchback, compact/mid/big SUV, off-roader, MPV, sedan,
+  // luxury sedan) has its own distinct shape and color instead of one image
+  // being reused across a dozen unrelated cars.
+  function svgDataUri(inner) {
+    return "data:image/svg+xml," + encodeURIComponent(
+      `<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`
+    );
+  }
+  const wheels = `<circle cx="120" cy="150" r="28" fill="#222"/><circle cx="120" cy="150" r="12" fill="#ccc"/>
+                   <circle cx="300" cy="150" r="28" fill="#222"/><circle cx="300" cy="150" r="12" fill="#ccc"/>`;
+  const ground = `<rect width="400" height="200" fill="#eef1f6"/><ellipse cx="210" cy="172" rx="190" ry="10" fill="#00000018"/>`;
+
+  const IMG = {
+    hatchback: svgDataUri(ground + `
+      <path d="M55 150 L55 115 Q60 90 100 85 L150 60 Q180 50 210 50 L240 60 Q265 70 285 90 L340 105 L340 150 Z" fill="#e94560"/>
+      <path d="M155 65 Q182 56 208 56 L235 65 Q250 72 262 85 L165 85 Z" fill="#cfe8ff"/>
+      ${wheels}`),
+    suvCompact: svgDataUri(ground + `
+      <path d="M50 150 L50 105 Q52 80 95 75 L135 55 Q170 45 215 45 L255 55 Q285 65 305 85 L350 100 L350 150 Z" fill="#f1f1f1" stroke="#ccc" stroke-width="2"/>
+      <path d="M140 60 Q172 50 213 50 L250 60 Q262 68 272 82 L150 82 Z" fill="#a8dadc"/>
+      ${wheels}`),
+    suvMid: svgDataUri(ground + `
+      <path d="M45 150 L45 100 Q47 75 90 70 L130 50 Q170 40 215 40 L255 50 Q288 62 308 82 L355 98 L355 150 Z" fill="#e07a1f"/>
+      <path d="M135 55 Q172 45 213 45 L250 55 Q264 64 275 80 L145 80 Z" fill="#cfe8ff"/>
+      ${wheels}`),
+    suvBig: svgDataUri(ground + `
+      <path d="M40 150 L40 95 Q42 68 88 63 L125 45 Q168 35 218 35 L258 45 Q292 58 315 80 L360 95 L360 150 Z" fill="#3a3f4a"/>
+      <path d="M130 50 Q170 40 215 40 L253 50 Q267 60 278 78 L140 78 Z" fill="#cfe8ff"/>
+      <rect x="120" y="42" width="150" height="6" fill="#888"/>
+      ${wheels}`),
+    suvOffRoad: svgDataUri(ground + `
+      <path d="M45 150 L45 95 Q47 72 90 68 L125 50 Q165 42 215 42 L250 50 Q283 60 305 80 L350 95 L350 150 Z" fill="#6b7a4f"/>
+      <path d="M130 55 Q168 46 212 46 L248 55 Q260 64 270 78 L140 78 Z" fill="#cfe8ff"/>
+      <circle cx="335" cy="118" r="20" fill="#333"/><circle cx="335" cy="118" r="9" fill="#999"/>
+      <rect x="120" y="38" width="140" height="5" fill="#444"/>
+      ${wheels}`),
+    mpv: svgDataUri(ground + `
+      <path d="M45 150 L45 90 Q47 60 95 58 L110 50 Q140 42 220 42 L290 50 Q320 58 330 85 L355 95 L355 150 Z" fill="#1f8a8c"/>
+      <path d="M100 60 Q140 50 220 50 L285 58 Q305 66 315 82 L110 82 Z" fill="#cfe8ff"/>
+      <line x1="215" y1="55" x2="215" y2="82" stroke="#0f5f60" stroke-width="3"/>
+      ${wheels}`),
+    sedan: svgDataUri(ground + `
+      <path d="M40 150 L40 112 Q42 92 75 88 L120 58 Q155 48 200 48 L235 58 Q262 68 278 90 L330 100 Q350 105 350 122 L350 150 Z" fill="#274690"/>
+      <path d="M125 62 Q157 53 198 53 L232 62 Q248 70 258 85 L140 85 Z" fill="#cfe8ff"/>
+      ${wheels}`),
+    luxurySedan: svgDataUri(ground + `
+      <path d="M35 150 L35 112 Q37 90 72 86 L122 55 Q158 44 205 44 L240 55 Q268 66 285 89 L335 100 Q355 105 355 123 L355 150 Z" fill="#1a1a2e"/>
+      <path d="M126 60 Q160 50 203 50 L237 60 Q254 69 264 86 L143 86 Z" fill="#dfe9f5"/>
+      <rect x="35" y="112" width="320" height="4" fill="#d4af37"/>
+      ${wheels}`),
+  };
+
+  let cars = [
+    { id:1, brand:"Maruti Suzuki", model:"Swift", type:"Hatchback", price:1800, seats:5, transmission:"Manual", imgStyle:"hatchback", available:true },
+    { id:2, brand:"Maruti Suzuki", model:"Brezza", type:"SUV", price:2800, seats:5, transmission:"Auto", imgStyle:"suvCompact", available:true },
+    { id:3, brand:"Hyundai", model:"Creta", type:"SUV", price:3200, seats:5, transmission:"Auto", imgStyle:"suvMid", available:true },
+    { id:4, brand:"Hyundai", model:"Verna", type:"Sedan", price:2700, seats:5, transmission:"Auto", imgStyle:"sedan", available:true },
+    { id:5, brand:"Honda", model:"City", type:"Sedan", price:2500, seats:5, transmission:"Auto", imgStyle:"sedan", available:true },
+    { id:6, brand:"Honda", model:"Amaze", type:"Sedan", price:2200, seats:5, transmission:"Manual", imgStyle:"sedan", available:true },
+    { id:7, brand:"Toyota", model:"Innova Crysta", type:"MPV", price:4200, seats:7, transmission:"Manual", imgStyle:"mpv", available:true },
+    { id:8, brand:"Toyota", model:"Fortuner", type:"SUV", price:5500, seats:7, transmission:"Auto", imgStyle:"suvBig", available:false },
+    { id:9, brand:"Mahindra", model:"Thar", type:"SUV", price:3800, seats:4, transmission:"Manual", imgStyle:"suvOffRoad", available:true },
+    { id:10, brand:"Mahindra", model:"XUV700", type:"SUV", price:4500, seats:7, transmission:"Auto", imgStyle:"suvBig", available:true },
+    { id:11, brand:"Tata", model:"Nexon", type:"SUV", price:2600, seats:5, transmission:"Auto", imgStyle:"suvCompact", available:true },
+    { id:12, brand:"Tata", model:"Harrier", type:"SUV", price:3500, seats:5, transmission:"Auto", imgStyle:"suvMid", available:true },
+    { id:13, brand:"Kia", model:"Seltos", type:"SUV", price:3000, seats:5, transmission:"Auto", imgStyle:"suvMid", available:true },
+    { id:14, brand:"Kia", model:"Sonet", type:"SUV", price:2400, seats:5, transmission:"Auto", imgStyle:"suvCompact", available:true },
+    { id:15, brand:"MG", model:"Hector", type:"SUV", price:3300, seats:5, transmission:"Auto", imgStyle:"suvMid", available:true },
+    { id:16, brand:"Volkswagen", model:"Virtus", type:"Sedan", price:2900, seats:5, transmission:"Auto", imgStyle:"sedan", available:true },
+    { id:17, brand:"Skoda", model:"Kushaq", type:"SUV", price:3100, seats:5, transmission:"Auto", imgStyle:"suvMid", available:true },
+    { id:18, brand:"Jeep", model:"Compass", type:"SUV", price:4800, seats:5, transmission:"Auto", imgStyle:"suvMid", available:false },
+    { id:19, brand:"Nissan", model:"Magnite", type:"SUV", price:2300, seats:5, transmission:"Manual", imgStyle:"suvCompact", available:true },
+    { id:20, brand:"Renault", model:"Kiger", type:"SUV", price:2100, seats:5, transmission:"Manual", imgStyle:"suvCompact", available:true },
+    { id:21, brand:"BMW", model:"3 Series", type:"Luxury", price:8500, seats:5, transmission:"Auto", imgStyle:"luxurySedan", available:true },
+    { id:22, brand:"Mercedes-Benz", model:"C-Class", type:"Luxury", price:9000, seats:5, transmission:"Auto", imgStyle:"luxurySedan", available:true },
+    { id:23, brand:"Audi", model:"A4", type:"Luxury", price:8800, seats:5, transmission:"Auto", imgStyle:"luxurySedan", available:true },
+    { id:24, brand:"Volvo", model:"XC90", type:"Luxury", price:12000, seats:7, transmission:"Auto", imgStyle:"suvBig", available:true }
+  ];
+  let nextId = 25;
+
+  // Default image style suggested per body type when adding a car
+  const DEFAULT_STYLE_FOR_TYPE = {
+    Hatchback: "hatchback", Sedan: "sedan", SUV: "suvMid", MPV: "mpv", Luxury: "luxurySedan"
+  };
+
+  function carImage(c) {
+    // Custom URLs are stored directly in imgStyle prefixed with "custom:"
+    if (c.imgStyle && c.imgStyle.startsWith("custom:")) return c.imgStyle.slice(7);
+    return IMG[c.imgStyle] || IMG.sedan;
+  }
+  function carName(c) { return `${c.brand} ${c.model}`; }
+
+  async function loadCars() {
+    try {
+      const result = await window.storage.get('driveease_cars');
+      if (result && result.value) {
+        const parsed = JSON.parse(result.value);
+        if (Array.isArray(parsed) && parsed.length) {
+          cars = parsed;
+          nextId = Math.max(...cars.map(c => c.id)) + 1;
+        }
+      }
+    } catch (err) {
+      // No saved data yet, or storage unavailable — fall back to seed data
+      console.warn('Using default fleet (no saved admin changes found):', err);
+    }
+    renderCars();
+    renderAdminTable();
+  }
+
+  async function persistCars() {
+    try {
+      const result = await window.storage.set('driveease_cars', JSON.stringify(cars), false);
+      if (!result) console.error('Could not save car changes.');
+    } catch (err) {
+      console.error('Storage error while saving cars:', err);
+    }
+  }
+
+  function renderCars() {
+    const grid = document.getElementById('carsGrid');
+    const available = cars.filter(c => c.available);
+    if (!available.length) {
+      grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#888;">No cars are currently available. Please check back soon.</p>`;
+      return;
+    }
+    const loggedIn = !!getUserSession();
+    grid.innerHTML = available.map(c => loggedIn ? `
+      <div class="car-card">
+        <img src="${carImage(c)}" alt="${carName(c)}" />
+        <div class="car-info">
+          <h3>${carName(c)}</h3>
+          <button class="btn" onclick="openModal(${c.id})">Book Now</button>
+        </div>
+      </div>
+    ` : `
+      <div class="car-card">
+        <img src="${carImage(c)}" alt="${carName(c)}" />
+        <div class="car-info">
+          <h3>${carName(c)}</h3>
+          <div class="type">${c.type}</div>
+          <div class="features">
+            <span>👥 ${c.seats} seats</span>
+            <span>⚙️ ${c.transmission}</span>
+          </div>
+          <div class="price">₹${c.price.toLocaleString('en-IN')} <span>/ day</span></div>
+          <button class="btn" onclick="openModal(${c.id})">Book Now</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderAdminTable() {
+    const body = document.getElementById('adminTableBody');
+    if (!cars.length) {
+      body.innerHTML = `<tr><td colspan="9" class="admin-empty">No cars yet — click "Add New Car" to get started.</td></tr>`;
+      return;
+    }
+    body.innerHTML = cars.map(c => `
+      <tr>
+        <td><img src="${carImage(c)}" alt="${carName(c)}" /></td>
+        <td>${c.brand}</td>
+        <td>${c.model}</td>
+        <td>${c.type}</td>
+        <td>₹${c.price.toLocaleString('en-IN')}</td>
+        <td>${c.seats}</td>
+        <td>${c.transmission}</td>
+        <td>
+          <span class="status-badge ${c.available ? 'status-available' : 'status-unavailable'}">
+            ${c.available ? 'Available' : 'Unavailable'}
+          </span>
+        </td>
+        <td class="admin-actions">
+          <button class="btn-edit" onclick="openCarForm(${c.id})">Edit</button>
+          <button class="btn-toggle" onclick="toggleAvailability(${c.id})">${c.available ? 'Mark Unavailable' : 'Mark Available'}</button>
+          <button class="btn-delete" onclick="deleteCar(${c.id})">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function toggleAvailability(id) {
+    const c = cars.find(x => x.id === id);
+    if (!c) return;
+    c.available = !c.available;
+    persistCars();
+    renderCars();
+    renderAdminTable();
+  }
+
+  function onCarTypeChange() {
+    // Only auto-suggest an image style for a brand-new car, not while editing one
+    if (!document.getElementById('carFormId').value) {
+      const type = document.getElementById('carType').value;
+      document.getElementById('carImageStyle').value = DEFAULT_STYLE_FOR_TYPE[type] || 'sedan';
+      updateImagePreview();
+    }
+  }
+
+  function updateImagePreview() {
+    const style = document.getElementById('carImageStyle').value;
+    const customWrap = document.getElementById('customImageWrap');
+    const uploadWrap = document.getElementById('uploadImageWrap');
+    const preview = document.getElementById('carImagePreview');
+    customWrap.style.display = style === 'custom' ? 'block' : 'none';
+    uploadWrap.style.display = style === 'upload' ? 'block' : 'none';
+
+    if (style === 'custom') {
+      const url = document.getElementById('carCustomImage').value.trim();
+      preview.src = url || IMG.sedan;
+    } else if (style === 'upload') {
+      const data = document.getElementById('carUploadedData').value;
+      preview.src = data || IMG.sedan;
+    } else {
+      preview.src = IMG[style];
+    }
+  }
+
+  function handleImageUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please choose an image file.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert('That image is a bit large (over 3MB) — try a smaller photo so it saves reliably.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById('carUploadedData').value = reader.result;
+      document.getElementById('carImagePreview').src = reader.result;
+    };
+    reader.onerror = () => alert('Could not read that file — please try another image.');
+    reader.readAsDataURL(file);
+  }
+
+  function openCarForm(id) {
+    const isEdit = typeof id === 'number';
+    document.getElementById('carFormTitle').textContent = isEdit ? 'Edit Car' : 'Add New Car';
+    document.getElementById('carFormId').value = isEdit ? id : '';
+    document.getElementById('carImageFile').value = '';
+    document.getElementById('carUploadedData').value = '';
+
+    if (isEdit) {
+      const c = cars.find(x => x.id === id);
+      document.getElementById('carBrand').value = c.brand;
+      document.getElementById('carModel').value = c.model;
+      document.getElementById('carType').value = c.type;
+      document.getElementById('carTransmission').value = c.transmission;
+      document.getElementById('carPrice').value = c.price;
+      document.getElementById('carSeats').value = c.seats;
+      document.getElementById('carAvailable').checked = c.available !== false;
+      document.getElementById('carCustomImage').value = '';
+      if (c.imgStyle && c.imgStyle.startsWith('custom:data:')) {
+        // Previously uploaded from device
+        document.getElementById('carImageStyle').value = 'upload';
+        document.getElementById('carUploadedData').value = c.imgStyle.slice(7);
+      } else if (c.imgStyle && c.imgStyle.startsWith('custom:')) {
+        document.getElementById('carImageStyle').value = 'custom';
+        document.getElementById('carCustomImage').value = c.imgStyle.slice(7);
+      } else {
+        document.getElementById('carImageStyle').value = c.imgStyle || 'sedan';
+      }
+    } else {
+      document.getElementById('carBrand').value = '';
+      document.getElementById('carModel').value = '';
+      document.getElementById('carType').value = 'SUV';
+      document.getElementById('carTransmission').value = 'Auto';
+      document.getElementById('carPrice').value = '';
+      document.getElementById('carSeats').value = 5;
+      document.getElementById('carAvailable').checked = true;
+      document.getElementById('carImageStyle').value = DEFAULT_STYLE_FOR_TYPE['SUV'];
+      document.getElementById('carCustomImage').value = '';
+    }
+    updateImagePreview();
+    document.getElementById('carFormModal').classList.add('active');
+  }
+
+  function closeCarForm() {
+    document.getElementById('carFormModal').classList.remove('active');
+  }
+
+  function saveCarForm() {
+    const idVal = document.getElementById('carFormId').value;
+    const brand = document.getElementById('carBrand').value.trim();
+    const model = document.getElementById('carModel').value.trim();
+    const type = document.getElementById('carType').value;
+    const transmission = document.getElementById('carTransmission').value;
+    const price = parseFloat(document.getElementById('carPrice').value);
+    const seats = parseInt(document.getElementById('carSeats').value, 10);
+    const available = document.getElementById('carAvailable').checked;
+    const styleSel = document.getElementById('carImageStyle').value;
+
+    if (!brand || !model || isNaN(price) || isNaN(seats)) {
+      alert('Please fill in brand, model, price, and seats.');
+      return;
+    }
+    if (styleSel === 'upload' && !document.getElementById('carUploadedData').value) {
+      alert('Please choose an image to upload, or pick a different image style.');
+      return;
+    }
+
+    let imgStyle;
+    if (styleSel === 'upload') {
+      imgStyle = 'custom:' + document.getElementById('carUploadedData').value;
+    } else if (styleSel === 'custom') {
+      imgStyle = 'custom:' + document.getElementById('carCustomImage').value.trim();
+    } else {
+      imgStyle = styleSel;
+    }
+
+    if (idVal) {
+      const c = cars.find(x => x.id === parseInt(idVal, 10));
+      Object.assign(c, { brand, model, type, transmission, price, seats, imgStyle, available });
+    } else {
+      cars.push({ id: nextId++, brand, model, type, transmission, price, seats, imgStyle, available });
+    }
+
+    persistCars();
+    renderCars();
+    renderAdminTable();
+    closeCarForm();
+  }
+
+  function deleteCar(id) {
+    const c = cars.find(x => x.id === id);
+    if (!c) return;
+    if (!confirm(`Remove ${carName(c)} from the fleet?`)) return;
+    cars = cars.filter(x => x.id !== id);
+    persistCars();
+    renderCars();
+    renderAdminTable();
+  }
+
+  function openModal(id) {
+    if (!getUserSession()) {
+      pendingBookingCarId = id;
+      openAccountModal('Please log in or sign up to book a car.');
+      return;
+    }
+    const c = cars.find(x => x.id === id);
+    document.getElementById('modalCarName').textContent = c ? carName(c) : '';
+    document.getElementById('bookingModal').classList.add('active');
+  }
+  function closeModal() {
+    document.getElementById('bookingModal').classList.remove('active');
+  }
+  function confirmBooking() {
+    const user = getUserSession();
+    alert(`Booking confirmed${user ? ' for ' + user : ''}! Check your email for details.`);
+    closeModal();
+  }
+
+  // ============================================================
+  // Admin authentication
+  //
+  // This page is fully static (no backend), so there is no way to
+  // truly hide a secret from someone willing to read the page's own
+  // code — anything checked in the browser can, in principle, be
+  // inspected or bypassed client-side. What follows is a deterrent
+  // suitable for that constraint, not real access control:
+  //   - No plaintext password is stored anywhere; only a salted,
+  //     iterated SHA-256 hash is kept (via window.storage).
+  //   - The admin sets their own password on first use rather than
+  //     a hardcoded value shipped in the file.
+  //   - Repeated failed attempts trigger a temporary lockout.
+  //   - "Logged in" state lives in sessionStorage, so it doesn't
+  //     survive a closed tab/browser, unlike a JS variable that
+  //     might persist across re-renders.
+  // A real access-control guarantee (stopping a determined user, not
+  // just a casual one) requires a server that verifies credentials
+  // before allowing any car data to change.
+  // ============================================================
+
+  const ADMIN_AUTH_KEY = 'driveease_admin_auth';
+  const ADMIN_SESSION_KEY = 'driveease_admin_session';
+  const LOCKOUT_KEY = 'driveease_admin_lockout';
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_MS = 30000;
+  const HASH_ITERATIONS = 1000;
+
+  async function sha256Hex(text) {
+    const enc = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function randomSaltHex(bytes = 16) {
+    const arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function hashPassword(password, salt) {
+    // Iterated hashing to raise the cost of brute-forcing versus a
+    // single fast SHA-256 pass. Not a substitute for bcrypt/Argon2
+    // (which need a real server to run safely), but better than
+    // nothing for a client-only page.
+    let h = salt + ':' + password;
+    for (let i = 0; i < HASH_ITERATIONS; i++) {
+      h = await sha256Hex(h);
+    }
+    return h;
+  }
+
+  async function getAdminAuth() {
+    try {
+      const result = await window.storage.get(ADMIN_AUTH_KEY, true);
+      return result && result.value ? JSON.parse(result.value) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function setAdminAuth(username, salt, hash) {
+    try {
+      await window.storage.set(ADMIN_AUTH_KEY, JSON.stringify({
+        username, usernameLower: username.toLowerCase(), salt, hash
+      }), true);
+    } catch (err) {
+      console.error('Could not save admin credentials:', err);
+    }
+  }
+
+  function getLockoutState() {
+    try {
+      const raw = localStorage.getItem(LOCKOUT_KEY);
+      return raw ? JSON.parse(raw) : { attempts: 0, lockUntil: 0 };
+    } catch (err) {
+      return { attempts: 0, lockUntil: 0 };
+    }
+  }
+  function setLockoutState(state) {
+    try { localStorage.setItem(LOCKOUT_KEY, JSON.stringify(state)); } catch (err) {}
+  }
+  function clearLockoutState() {
+    try { localStorage.removeItem(LOCKOUT_KEY); } catch (err) {}
+  }
+
+  function isSessionActive() {
+    return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
+  }
+  function setSessionActive() {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+  }
+  function clearSessionActive() {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  }
+
+  async function initAdminGate() {
+    const auth = await getAdminAuth();
+    if (auth && isSessionActive()) {
+      unlockAdminPanel();
+    } else if (auth) {
+      renderAdminGate('login');
+    } else {
+      renderAdminGate('setup');
+    }
+  }
+
+  function unlockAdminPanel() {
+    document.getElementById('adminLoginGate').style.display = 'none';
+    document.getElementById('adminPanelContent').style.display = 'block';
+  }
+
+  function lockAdminPanel() {
+    document.getElementById('adminPanelContent').style.display = 'none';
+    document.getElementById('adminLoginGate').style.display = 'block';
+  }
+
+  function renderAdminGate(mode) {
+    const gate = document.getElementById('adminLoginGate');
+
+    if (mode === 'login') {
+      const lock = getLockoutState();
+      if (lock.lockUntil && lock.lockUntil > Date.now()) {
+        renderLockedGate(lock.lockUntil);
+        return;
+      }
+    }
+
+    if (mode === 'setup') {
+      gate.innerHTML = `
+        <h3>Set Up Admin Access</h3>
+        <p class="hint">No admin account has been set yet. Choose a username and password — you'll need both to manage the fleet.</p>
+        <input type="text" id="setupUsername" placeholder="Choose an admin username" autocomplete="username" />
+        <input type="password" id="setupPw" placeholder="New password (min 8 characters)" autocomplete="new-password" />
+        <input type="password" id="setupPwConfirm" placeholder="Confirm password" autocomplete="new-password" />
+        <div class="error-msg" id="gateError"></div>
+        <button class="btn" onclick="submitAdminSetup()">Create Admin Account</button>
+        <div class="security-note">This page is fully static with no server, so this password deters casual access rather than guaranteeing true access control — a real guarantee needs a backend to verify credentials.</div>
+      `;
+    } else if (mode === 'login') {
+      gate.innerHTML = `
+        <h3>Admin Login</h3>
+        <p class="hint">Enter the admin username and password to manage cars.</p>
+        <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" />
+        <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAdminLogin()" />
+        <div class="error-msg" id="gateError"></div>
+        <button class="btn" onclick="submitAdminLogin()">Log In</button>
+        <div class="security-note">This page is fully static with no server, so this is deterrent-level protection, not true access control.</div>
+      `;
+      const pwField = document.getElementById('loginUsername');
+      if (pwField) pwField.focus();
+    }
+  }
+
+  function renderLockedGate(lockUntil) {
+    const gate = document.getElementById('adminLoginGate');
+    const secsLeft = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000));
+    gate.innerHTML = `
+      <h3>Too Many Attempts</h3>
+      <p class="hint">Login is temporarily locked after repeated failed attempts. Try again in <span id="lockCountdown">${secsLeft}</span>s.</p>
+    `;
+    const timer = setInterval(() => {
+      const left = Math.ceil((lockUntil - Date.now()) / 1000);
+      if (left <= 0) {
+        clearInterval(timer);
+        renderAdminGate('login');
+      } else {
+        const el = document.getElementById('lockCountdown');
+        if (el) el.textContent = left;
+      }
+    }, 1000);
+  }
+
+  async function submitAdminSetup() {
+    const username = document.getElementById('setupUsername').value.trim();
+    const pw = document.getElementById('setupPw').value;
+    const confirmPw = document.getElementById('setupPwConfirm').value;
+    const errEl = document.getElementById('gateError');
+    if (username.length < 3 || /\s/.test(username)) {
+      errEl.textContent = 'Username must be at least 3 characters with no spaces.';
+      return;
+    }
+    if (pw.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+    if (pw !== confirmPw) {
+      errEl.textContent = 'Passwords do not match.';
+      return;
+    }
+    const salt = randomSaltHex();
+    const hash = await hashPassword(pw, salt);
+    await setAdminAuth(username, salt, hash);
+    clearLockoutState();
+    setSessionActive();
+    unlockAdminPanel();
+  }
+
+  async function submitAdminLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const pw = document.getElementById('loginPw').value;
+    const errEl = document.getElementById('gateError');
+    const auth = await getAdminAuth();
+    if (!auth) { renderAdminGate('setup'); return; }
+
+    let lock = getLockoutState();
+    if (lock.lockUntil && lock.lockUntil > Date.now()) {
+      renderAdminGate('login');
+      return;
+    }
+
+    const usernameMatches = username.toLowerCase() === auth.usernameLower;
+    const hash = await hashPassword(pw, auth.salt);
+    if (usernameMatches && hash === auth.hash) {
+      clearLockoutState();
+      setSessionActive();
+      unlockAdminPanel();
+    } else {
+      lock.attempts = (lock.attempts || 0) + 1;
+      if (lock.attempts >= MAX_ATTEMPTS) {
+        lock.lockUntil = Date.now() + LOCKOUT_MS;
+        lock.attempts = 0;
+        setLockoutState(lock);
+        renderAdminGate('login');
+        return;
+      }
+      setLockoutState(lock);
+      if (errEl) {
+        errEl.textContent = `Invalid username or password. ${MAX_ATTEMPTS - lock.attempts} attempt(s) left before a temporary lockout.`;
+      }
+    }
+  }
+
+  function adminLogout() {
+    clearSessionActive();
+    lockAdminPanel();
+    renderAdminGate('login');
+  }
+
+  function openChangePasswordForm() {
+    document.getElementById('cpCurrent').value = '';
+    document.getElementById('cpNew').value = '';
+    document.getElementById('cpConfirm').value = '';
+    document.getElementById('cpError').textContent = '';
+    document.getElementById('changePasswordModal').classList.add('active');
+  }
+  function closeChangePasswordForm() {
+    document.getElementById('changePasswordModal').classList.remove('active');
+  }
+  async function submitChangePassword() {
+    const current = document.getElementById('cpCurrent').value;
+    const next = document.getElementById('cpNew').value;
+    const confirmPw = document.getElementById('cpConfirm').value;
+    const errEl = document.getElementById('cpError');
+
+    const auth = await getAdminAuth();
+    if (!auth) { errEl.textContent = 'No admin password set yet.'; return; }
+
+    const currentHash = await hashPassword(current, auth.salt);
+    if (currentHash !== auth.hash) {
+      errEl.textContent = 'Current password is incorrect.';
+      return;
+    }
+    if (next.length < 8) {
+      errEl.textContent = 'New password must be at least 8 characters.';
+      return;
+    }
+    if (next !== confirmPw) {
+      errEl.textContent = 'New passwords do not match.';
+      return;
+    }
+    const salt = randomSaltHex();
+    const hash = await hashPassword(next, salt);
+    await setAdminAuth(auth.username, salt, hash);
+    closeChangePasswordForm();
+    alert('Admin password updated.');
+  }
+
+  // ============================================================
+  // User accounts (customer login/signup)
+  //
+  // Same constraints as admin auth above: no server, so this is a
+  // deterrent-grade account system, not a secure identity provider.
+  // The account list is stored in *shared* storage (window.storage
+  // with shared=true) so any visitor to this page can sign up and
+  // later log back in from a different browser/device and see the
+  // same account — which also means every signed-up username here
+  // is visible to anyone else who opens this page, the same way a
+  // real site's user directory would be to its own operator.
+  // ============================================================
+
+  const USERS_KEY = 'driveease_users';
+  const USER_SESSION_KEY = 'driveease_user_session';
+  const USER_LOCKOUT_KEY = 'driveease_user_lockout';
+  let pendingBookingCarId = null;
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  async function getUsersMap() {
+    try {
+      const result = await window.storage.get(USERS_KEY, true);
+      return result && result.value ? JSON.parse(result.value) : {};
+    } catch (err) {
+      return {};
+    }
+  }
+  async function setUsersMap(map) {
+    try {
+      await window.storage.set(USERS_KEY, JSON.stringify(map), true);
+    } catch (err) {
+      console.error('Could not save user accounts:', err);
+    }
+  }
+
+  function getUserLockoutState() {
+    try {
+      const raw = localStorage.getItem(USER_LOCKOUT_KEY);
+      return raw ? JSON.parse(raw) : { attempts: 0, lockUntil: 0 };
+    } catch (err) {
+      return { attempts: 0, lockUntil: 0 };
+    }
+  }
+  function setUserLockoutState(state) {
+    try { localStorage.setItem(USER_LOCKOUT_KEY, JSON.stringify(state)); } catch (err) {}
+  }
+  function clearUserLockoutState() {
+    try { localStorage.removeItem(USER_LOCKOUT_KEY); } catch (err) {}
+  }
+
+  function getUserSession() {
+    return sessionStorage.getItem(USER_SESSION_KEY);
+  }
+  function setUserSession(username) {
+    sessionStorage.setItem(USER_SESSION_KEY, username);
+  }
+  function clearUserSession() {
+    sessionStorage.removeItem(USER_SESSION_KEY);
+  }
+
+  function renderAccountNav() {
+    const li = document.getElementById('accountNavItem');
+    if (!li) return;
+    const user = getUserSession();
+    if (user) {
+      li.innerHTML = `<a class="account-link" onclick="userLogout()">Hi, ${escapeHtml(user)} · Log Out</a>`;
+    } else {
+      li.innerHTML = `<a class="account-link" onclick="openAccountModal()">Login / Sign Up</a>`;
+    }
+  }
+
+  function openAccountModal(message) {
+    document.getElementById('userLoginUsername').value = '';
+    document.getElementById('userLoginPassword').value = '';
+    document.getElementById('userLoginError').textContent = message || '';
+    document.getElementById('userSignupUsername').value = '';
+    document.getElementById('userSignupPassword').value = '';
+    document.getElementById('userSignupConfirm').value = '';
+    document.getElementById('userSignupError').textContent = '';
+    switchAccountTab('login');
+    document.getElementById('accountModal').classList.add('active');
+  }
+  function closeAccountModal() {
+    document.getElementById('accountModal').classList.remove('active');
+    pendingBookingCarId = null;
+  }
+  function switchAccountTab(tab) {
+    const loginForm = document.getElementById('accountLoginForm');
+    const signupForm = document.getElementById('accountSignupForm');
+    const loginBtn = document.getElementById('tabLoginBtn');
+    const signupBtn = document.getElementById('tabSignupBtn');
+    if (tab === 'login') {
+      loginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+      loginBtn.classList.add('active');
+      signupBtn.classList.remove('active');
+    } else {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+      loginBtn.classList.remove('active');
+      signupBtn.classList.add('active');
+    }
+  }
+
+  async function submitUserSignup() {
+    const username = document.getElementById('userSignupUsername').value.trim();
+    const pw = document.getElementById('userSignupPassword').value;
+    const confirmPw = document.getElementById('userSignupConfirm').value;
+    const errEl = document.getElementById('userSignupError');
+
+    if (username.length < 3 || /\s/.test(username)) {
+      errEl.textContent = 'Username must be at least 3 characters with no spaces.';
+      return;
+    }
+    if (pw.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+    if (pw !== confirmPw) {
+      errEl.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    const users = await getUsersMap();
+    const key = username.toLowerCase();
+    if (users[key]) {
+      errEl.textContent = 'That username is already taken.';
+      return;
+    }
+    const salt = randomSaltHex();
+    const hash = await hashPassword(pw, salt);
+    users[key] = { username, salt, hash, createdAt: Date.now() };
+    await setUsersMap(users);
+    clearUserLockoutState();
+    setUserSession(username);
+    renderAccountNav();
+    renderCars();
+    closeAccountModal();
+    resumePendingBooking();
+  }
+
+  async function submitUserLogin() {
+    const username = document.getElementById('userLoginUsername').value.trim();
+    const pw = document.getElementById('userLoginPassword').value;
+    const errEl = document.getElementById('userLoginError');
+
+    const lock = getUserLockoutState();
+    if (lock.lockUntil && lock.lockUntil > Date.now()) {
+      const secs = Math.ceil((lock.lockUntil - Date.now()) / 1000);
+      errEl.textContent = `Too many attempts. Try again in ${secs}s.`;
+      return;
+    }
+
+    const users = await getUsersMap();
+    const record = users[username.toLowerCase()];
+    const genericError = 'Invalid username or password.';
+    if (!record) {
+      registerFailedUserAttempt(lock, errEl, genericError);
+      return;
+    }
+    const hash = await hashPassword(pw, record.salt);
+    if (hash === record.hash) {
+      clearUserLockoutState();
+      setUserSession(record.username);
+      renderAccountNav();
+      renderCars();
+      closeAccountModal();
+      resumePendingBooking();
+    } else {
+      registerFailedUserAttempt(lock, errEl, genericError);
+    }
+  }
+
+  function registerFailedUserAttempt(lock, errEl, message) {
+    lock.attempts = (lock.attempts || 0) + 1;
+    if (lock.attempts >= MAX_ATTEMPTS) {
+      lock.lockUntil = Date.now() + LOCKOUT_MS;
+      lock.attempts = 0;
+      setUserLockoutState(lock);
+      const secs = Math.ceil(LOCKOUT_MS / 1000);
+      errEl.textContent = `Too many attempts. Try again in ${secs}s.`;
+      return;
+    }
+    setUserLockoutState(lock);
+    errEl.textContent = `${message} ${MAX_ATTEMPTS - lock.attempts} attempt(s) left before a temporary lockout.`;
+  }
+
+  function userLogout() {
+    clearUserSession();
+    renderAccountNav();
+    renderCars();
+  }
+
+  function resumePendingBooking() {
+    if (pendingBookingCarId !== null) {
+      const id = pendingBookingCarId;
+      pendingBookingCarId = null;
+      openModal(id);
+    }
+  }
+
+  loadCars();
+  initAdminGate();
+  renderAccountNav();
+</script>
+
+<!--
+============================================================
+  JAVA BACKEND REFERENCE (Spring Boot) — save separately
+============================================================
+
+// Car.java
+package com.driveease.model;
+import jakarta.persistence.*;
+
+@Entity
+public class Car {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String type;
+    private double pricePerDay;
+    private int seats;
+    private String transmission;
+    private String imageUrl;
+    private boolean available = true;
+    // getters & setters ...
+}
+
+// Booking.java
+@Entity
+public class Booking {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @ManyToOne private Car car;
+    private String customerName;
+    private String email;
+    private String phone;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private double totalPrice;
+    // getters & setters ...
+}
+
+// CarRepository.java
+public interface CarRepository extends JpaRepository<Car, Long> {
+    List<Car> findByAvailableTrue();
+    List<Car> findByType(String type);
+}
+
+// CarController.java
+@RestController
+@RequestMapping("/api/cars")
+@CrossOrigin(origins = "*")
+public class CarController {
+    @Autowired private CarRepository carRepo;
+
+    @GetMapping public List<Car> all() { return carRepo.findByAvailableTrue(); }
+    @GetMapping("/{id}") public Car one(@PathVariable Long id) {
+        return carRepo.findById(id).orElseThrow();
+    }
+}
+
+// BookingController.java
+@RestController
+@RequestMapping("/api/bookings")
+@CrossOrigin(origins = "*")
+public class BookingController {
+    @Autowired private BookingRepository bookingRepo;
+    @Autowired private CarRepository carRepo;
+
+    @PostMapping
+    public Booking create(@RequestBody BookingRequest req) {
+        Car car = carRepo.findById(req.carId()).orElseThrow();
+        long days = ChronoUnit.DAYS.between(req.startDate(), req.endDate());
+        Booking b = new Booking();
+        b.setCar(car);
+        b.setCustomerName(req.name());
+        b.setEmail(req.email());
+        b.setPhone(req.phone());
+        b.setStartDate(req.startDate());
+        b.setEndDate(req.endDate());
+        b.setTotalPrice(days * car.getPricePerDay());
+        return bookingRepo.save(b);
+    }
+}
+
+// application.properties
+// spring.datasource.url=jdbc:mysql://localhost:3306/driveease
+// spring.jpa.hibernate.ddl-auto=update
+// server.port=8080
+
+Run with: mvn spring-boot:run
+Then replace the `cars` array in the JS above with:
+  fetch('http://localhost:8080/api/cars').then(r => r.json()).then(data => { ... });
+-->
+
+</body>
+</html>
